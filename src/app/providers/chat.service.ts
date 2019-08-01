@@ -8,26 +8,31 @@ import * as firebase from 'firebase/app';
 export class ChatService {
   private itemsCollection: AngularFirestoreCollection<Mensaje>;
   public chats: Mensaje[] = [];
-  public usuario:any = {};
+  public usuario: any = {};
 
   constructor(
     private afs: AngularFirestore,
     public afAuth: AngularFireAuth) {
 
-      this.afAuth.authState.subscribe( user => {
-        console.log(user);
-        if( !user ){
-          return;
-        }
+    this.afAuth.authState.subscribe(user => {
+      console.log(user);
+      if (!user) {
+        return;
+      }
 
-        this.usuario.nombre = user.displayName;
-        this.usuario.uid = user.uid;
-      });
+      this.usuario.nombre = user.displayName;
+      this.usuario.uid = user.uid;
+    });
 
+  }
+
+  login(proveedor: string) {
+    if (proveedor === "google") {
+      this.afAuth.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
     }
-
-  login(proveedor:string) {
-    this.afAuth.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+    else if (proveedor === "twitter") {
+      this.afAuth.auth.signInWithPopup(new firebase.auth.TwitterAuthProvider() );
+    }
   }
 
   logout() {
@@ -53,9 +58,11 @@ export class ChatService {
   }
 
   agregarMensaje(texto: string) {
+    console.log(this.usuario);
     // TODO falta uid
     let mensaje: Mensaje = {
-      nombre: "Demo",
+      nombre: this.usuario.nombre,
+      uid: this.usuario.uid,
       mensaje: texto,
       fecha: new Date().getTime()
     }
